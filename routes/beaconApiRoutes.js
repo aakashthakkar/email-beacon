@@ -12,13 +12,11 @@ const uniqid = require('uniqid');
 const jwt = require('jsonwebtoken');
 const redis = require("redis-mock");
 const fs = require('fs');
-const device = require('express-device');
 
 
 
 
 beaconApi.use(bodyParser.json({limit: '5mb'}));
-beaconApi.use(device.capture());
 
 beaconApi.use((req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*');
