@@ -25,4 +25,4 @@ Installation Steps:
 2. Create a `logs` folder in root and create an empty file `logs.txt` inside that logs folder.
 3. Add email details in `config/emailConfig.js` file.
 4. run `npm install`
-5. run `node index.js`
+5. run `npm start`
