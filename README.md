@@ -16,6 +16,9 @@ It is recommended to use an https server, because most email clients will reject
 
 3. Logs api - Implemented temporarily to check the log file.
 
+Example URL call:
+`https://$HOST/logs`
+
 Installation Steps:
 
 1. Clone the repo.
