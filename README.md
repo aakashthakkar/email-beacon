@@ -7,7 +7,7 @@ Example input:
   email: "xzs@email.com"
 }`
 
-2. Image api - accepts two params using a get request, the first one being the API key and the second one being the fiiename requested. The system leverages the Json Web Token api to fetch encrypted data to avoid a db search request.
+2. Image api - accepts two params using a get request, the first one being the API key and the second one being the filename requested. The system leverages the JSON Web Token api to fetch encrypted data to avoid a db search request.
 
 Example URL call:
 `https://$HOST/$apikey/$filename`
