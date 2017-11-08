@@ -27,51 +27,51 @@ beaconApi.use((req, res, next) => {
 //subscribe api supports an input of an email address and we add it to the database and send a welcome email.
 beaconApi.post('/subscribe', (req, res) => {
   const email = req.body.hasOwnProperty('email') ? req.body.email : '';
-  if(email != ''){
-    if(commonUtilities.validateEmail(email)){
-      const uniqueID = uniqid();
-      const subscribeData = JSON.stringify({ID: uniqueID, email: email});
-      try{
-        const client = redis.createClient();
-        client.set(uniqueID, subscribeData);
-        client.quit();
-
-        const token = jwt.sign({
-          data: subscribeData
-        }, commonConfig.secretKey, {expiresIn: 86400 * 50});
-        const URL = `https://${req.headers.host}/${token}/${commonConfig.subscribImageName}`;
-        const mailOptions = {
-          to: email,
-          subject: 'Sending Email using Node.js',
-          html: `<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><table><tr><td><img src="${URL}"/></td></tr></table>`,
-        };
-        emailTransporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            return res.status(400).json({
-              message: 'Subscription Failed!'
-            });
-          } else {
-            fs.appendFileSync('./logs/logs.txt', `Added user ${email} to the subscription list and sent the welcome email!\r\n`);
-            return res.status(200).json({
-              message:"Thanks for subscribing",
-              data: URL
-          });
-          }
-        });
-      } catch(e){
-        console.log(`Error: subscribe api ${e}`);
-        return res.status(400).json({
-          message: 'Subscription Failed!'
-        });
-      }
-
-
-    } else {
+  if(email != '' && commonUtilities.validateEmail(email)){
+    const uniqueID = uniqid();
+    const subscribeData = JSON.stringify({ID: uniqueID, email: email});
+    try{
+      const client = redis.createClient();
+      client.set(uniqueID, subscribeData);
+      client.quit();
+			let token;
+      if(token = commonUtilities.getTokenFromSubscribeData(subscribeData)){
+				const URL = `${req.protocol}://${req.headers.host}/${token}/${commonConfig.subscribImageName}`;
+				const mailOptions = {
+					to: email,
+					subject: 'Sending Email using Node.js',
+					html: `<meta http-equiv="Content-Type" content="text/html; charset=utf-8"><table><tr><td><img src="${URL}"/></td></tr></table>`,
+				};
+				emailTransporter.sendMail(mailOptions, (error, info) => {
+					if (error) {
+						return res.status(400).json({
+							message: 'Subscription Failed!'
+						});
+					} else {
+						fs.appendFileSync('./logs/logs.txt', `Added user ${email} to the subscription list and sent the welcome email!\r\n`);
+						return res.status(200).json({
+							message:"Thanks for subscribing",
+							data: URL
+						});
+					}
+				});
+			} else {
+				return res.status(400).json({
+	        message: 'Token generation failed!'
+	      });
+			}
+    } catch(e){
+      console.log(`Error: subscribe api ${e}`);
       return res.status(400).json({
-        message: 'invalid email'
+        message: 'Subscription Failed!'
       });
     }
+  } else {
+    return res.status(400).json({
+      message: 'invalid email'
+    });
   }
+
 });
 beaconApi.get('/logs', (req, res) => {
   fs.readFile('./logs/logs.txt', (err, data) => {
@@ -80,13 +80,13 @@ beaconApi.get('/logs', (req, res) => {
     res.write(data);
     res.end();
   });
-  
+
 });
 
 //URL to get image, it takes in the apiKey and filename and processes the apikey to get details of the user and returns the image file if everything goes well
 beaconApi.get('/:apiKey/:fileName', (req, res) => {
 
-  var processBeacon = async (req, callback) => {
+  const processBeacon = async (req, callback) => {
     const apiKey = req.params.hasOwnProperty('apiKey') ? req.params.apiKey : '';
     const fileName = req.params.hasOwnProperty('fileName') ? req.params.fileName : '';
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null);
@@ -111,7 +111,7 @@ beaconApi.get('/:apiKey/:fileName', (req, res) => {
                console.log('please add a logs folder and log.txt file in the root of this repo');
             }
           }
-          callback((await commonUtilities.upsertNewUserDetails(userDetails)) ? commonUtilities.getImageFromFile(fileName) : false);
+          callback((await commonUtilities.upsertUserDetails(userDetails)) ? commonUtilities.getImageFromFile(fileName) : false);
 
         } else {
           callback(false);
