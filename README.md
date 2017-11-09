@@ -12,7 +12,7 @@ Example input:
 Example URL call:
 `https://$HOST/$apikey/$filename`
 
-It is recommended to use an https server, because most email clients will reject the image, hence I have defaulted them with https prefix. I recommended using c9.io to run this project because they support https requests.
+It is recommended to use an https server, because most email clients will reject the image. I recommended using c9.io to run this project because they support https requests.
 
 3. Logs api - Implemented temporarily to check the log file.
 
